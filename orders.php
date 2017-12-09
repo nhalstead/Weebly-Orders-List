@@ -12,9 +12,9 @@ $row = 1;
 $empty = 0;
 $Tnum = 0;
 define("DATE", "F j, Y @ g:i A");
-preg_match("/orders-([a-zA-Z0-9]{1,})-([a-zA-Z0-9]{1,})-([a-zA-Z0-9]{1,})-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $file, $matches);
-if($matches[4] === "start"){
-	$matches[4] = 0;
+preg_match("/orders-([a-zA-Z0-9]{1,})-weebly-com-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $file, $matches);
+if($matches[2] === "start"){
+	$matches[2] = 0;
 }
 header("X-Powered-By: Noah 2.0");
 
@@ -106,8 +106,8 @@ function iarray(){
 </style>
 EOF;
 	$re = array(
-		"Date From: " => date(DATE, $matches[4]),
-		"Date To: " => date(DATE, $matches[5]),
+		"Date From: " => date(DATE, $matches[2]),
+		"Date To: " => date(DATE, $matches[3]),
 		"Total Processed Rows of Data:" => count($list),
 		"&nbsp;" => "&nbsp;",
 		"<small>File Name:</small>" => "<small>".$file."</small>",

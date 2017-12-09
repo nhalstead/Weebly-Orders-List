@@ -1,8 +1,9 @@
 <?php
 $file = "orders-[SHOP_NAME]-weebly-com-[START]-[END].csv";
+
 date_default_timezone_set("EST");
 $explain = true;
-$catch = array("BILLING NAME", "TOTAL", "DATE", "SHIPPING EMAIL", "ORDER #");
+$catch = array("BILLING NAME", "TOTAL", "DATE", "SHIPPING EMAIL", "ORDER #", "TAX TOTAL", "SHIPPING PRICE", "SHIPPING COUNTRY", "SHIPPING REGION");
 
 $catchIndex = array();
 $catchNUM = array();
@@ -10,6 +11,11 @@ $list = array();
 $row = 1;
 $empty = 0;
 $Tnum = 0;
+define("DATE", "F j, Y @ g:i A");
+preg_match("/orders-([a-zA-Z0-9]{1,})-([a-zA-Z0-9]{1,})-([a-zA-Z0-9]{1,})-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $file, $matches);
+if($matches[4] === "start"){
+	$matches[4] = 0;
+}
 header("X-Powered-By: Noah 2.0");
 
 // @link https://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago
@@ -64,10 +70,13 @@ function iarray(){
 				$h = iarray();
 				if( !empty( $data[ $h['TOTAL'] ] ) ){
 					$list[] = array(
-						"Name" => strtoupper( $data[ $h['BILLING NAME'] ] ),
-						"Total" => strtoupper( $data[ $h['TOTAL'] ] ),
-						"Date" => strtoupper( $data[ $h['DATE'] ] ),
-						"OrderNum" => strtoupper( $data[ $h['ORDER #'] ] )
+						"Name" => strtoupper( $data[$h['BILLING NAME']] ),
+						"Total" => strtoupper( $data[$h['TOTAL']] ),
+						"Date" => strtoupper( $data[$h['DATE']] ),
+						"OrderNum" => strtoupper( $data[$h['ORDER #']] ),
+						"Tax" => strtoupper( $data[$h['TAX TOTAL']] ),
+						"Shipping" => strtoupper( $data[$h['SHIPPING PRICE'] ] ),
+						"Region" => strtoupper( $data[$h['SHIPPING COUNTRY']] . $data[$h['SHIPPING REGION']] )
 					);
 				}
 				else {
@@ -81,7 +90,8 @@ function iarray(){
 	}
 	else {
 		http_response_code(500);
-		echo "File not Found!";
+		echo "File not Found!<br>";
+		echo "&nbsp;&nbsp;&nbsp;&nbsp;".$file;
 		exit();
 	}
 
@@ -96,17 +106,19 @@ function iarray(){
 </style>
 EOF;
 	$re = array(
-		"File Name:" => $file,
+		"Date From: " => date(DATE, $matches[4]),
+		"Date To: " => date(DATE, $matches[5]),
 		"Total Processed Rows of Data:" => count($list),
-		"Date of Index Creation:" => date("F j @ Y, g:i A"),
-		"File Creation Time:" => date("F j, Y @ g:i A", filectime($file))." (". time_elapsed_string('@'.filectime($file)) .")",
 		"&nbsp;" => "&nbsp;",
+		"<small>File Name:</small>" => "<small>".$file."</small>",
+		"<small>Date of Index Creation:</small>" => "<small>".date(DATE)."</small>",
+		"<small>File Creation Time:</small>" => "<small>".date(DATE, filectime($file))." (". time_elapsed_string('@'.filectime($file)) .")</small>",
 		"<small>File Hash:</small>" => "<small>".md5_file($file)."</small>",
 		"<small>Rows considered to be Empty:</small>" => "<small>".$empty."</small>",
 		"<small>Total Read Calls:</small>" => "<small>".$Tnum."</small>",
 	);
-	echo "<table>";
-	echo "<tr style=''><td style='width:300px'></td><td></td></tr>";
+	echo "<table style='font-size:15px;'>";
+	echo "<tr style=''><td style='width:300px;'></td><td></td></tr>";
 	foreach($re as $k => $s){
 		echo "<tr>";
 			echo "<td>".$k."</td><td><b>".$s."</b></td>";
@@ -117,13 +129,19 @@ EOF;
 
 // Loop the Records
 	$records = array();
+	$total = 0;
+	$tax = 0;
+	$shipping = 0;
 	foreach($list as $i => $k){
 		$records[$k['Name']][$k['OrderNum']] = $k['Total'];
+		$shipping += $k['Shipping'];
+		$total += $k['Total'];
+		$tax += $k['Tax'];
 	}
 
 // Print Records
 	echo "<br>";
-	echo "<table style='font-family: monospace; font-size: 15px;'>";
+	echo "<table style='font-family: monospace; font-size: 14px;'>";
 	echo "<tr style='background-color:darkorange;'><td style='width:450px; padding-left:4px;'>Name</td><td style='width:220px; padding-left:4px;'>Totals</td></tr>";
 	foreach($records as $name => $r){
 		$rr = array_sum($r);
@@ -153,5 +171,15 @@ EOF;
 		}
 	}
 	echo "</table>";
+	
+	echo "<table style='margin-left:30px;padding:6px;border: 2px solid black;'>";
+		echo "<tr><td>Total Shipping:</td><td>$". sprintf('%01.2f', $shipping) ."&nbsp;&nbsp;&nbsp;&nbsp;<small>( Already in the Order Price )</small></td></tr>";
+		echo "<tr><td>&nbsp;</td><td>&nbsp;</td></tr>";
+		echo "<tr><td>Total Tax:</td><td>$". sprintf('%01.2f', $tax) ."</td></tr>";
+		echo "<tr><td>Sub Total:</td><td><b>$". sprintf('%01.2f', $total) ."</b></td></tr>";
+		echo "<tr><td style='width:150px;'>&nbsp;</td><td style='width:300px;'>&nbsp;</td></tr>";
+		echo "<tr><td>Total:</td><td>$". sprintf('%01.2f', (($total-$tax)-$shipping) ) ."&nbsp;&nbsp;&nbsp;&nbsp;<small>( This has the Tax Subtracted and the Shipping )</small></td></tr>";
+	echo "</table>";
+	echo "<br><br><br>";
 // End of File.
 ?>

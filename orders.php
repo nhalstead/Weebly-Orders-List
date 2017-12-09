@@ -1,5 +1,4 @@
 <?php
-header("Content-Type: text/plain");
 $file = "orders-[SHOP_NAME]-weebly-com-[START]-[END].csv";
 
 $catch = array("billing name", "total", "order notes", "date", "shipping email");
@@ -8,6 +7,7 @@ $list = array();
 
 $row = 1;
 $empty = 0;
+$Tnum = 0;
 
 function iarray(){
 	global $catch, $catchNUM;
@@ -17,8 +17,7 @@ function iarray(){
 if (($handle = fopen($file, "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $num = count($data);
-        //echo "<p> $num fields in line $row: <br /></p>\n";
-		
+
 		// Grab the Locations of the Columns
 		if($row == 1){
 			foreach($data as $k => $d){
@@ -41,22 +40,37 @@ if (($handle = fopen($file, "r")) !== FALSE) {
 			}
         }
 		$row++;
+		$Tnum += $num;
     }
     fclose($handle);
 }
 
-echo "Empty Rows: ".$empty.PHP_EOL;
-//print_r($list);
+echo "File Name: <b>".$file."</b><br>";
+echo "File Hash: <b>".md5_file($file)."</b><br>";
+echo "Rows considered to be Empty: ".$empty."<br>";
+echo "Total Read Calls: ".$Tnum."<br>";
+
+echo "Total Processed Rows of Data: <b>".count($list)."</b><br>";
 
 $records = array();
 foreach($list as $i => $k){
 	$records[$k['Date']][] = $k['Total'];
+	echo ".";
 }
 
-//print_r($records);
+echo "<br>";
 
+echo "<table>";
+echo "<tr style='background-color: darkorange;'><td style='width:400px'>Name</td><td style='width:200px'>Totals</td></tr>";
 foreach($records as $i => $r){
-	echo $i."\t\t\t\t|\t\t$".array_sum($r)."\r";
+	$rr = array_sum($r);
+	$h = "white";
+	$h = ($rr >= 90)?"yellow":$h;
+	$h = ($rr >= 100)?"lightgreen":$h;
+	echo "<tr>";
+		echo "<td>".$i."</td><td style='background-color:".$h."'>$".$rr."</td>";
+	echo "</tr>";
 }
+echo "</table>";
 
 ?>

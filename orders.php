@@ -61,6 +61,7 @@ function iarray(){
 			$fslist[] = $name;
 		}
 		
+		echo "<title>Please Select File</title>";
 		echo "<table>";
 			echo "<tr><td style='width:480px;'>&nbsp;</td><td style='width:300px;'>&nbsp;</td><td>&nbsp;</td></tr>";
 			foreach($fslist as $i => $fs){
@@ -118,6 +119,7 @@ function iarray(){
 	}
 	else {
 		http_response_code(500);
+		echo "<title>Not Found!</title>";
 		echo "File not Found!<br>";
 		echo "&nbsp;&nbsp;&nbsp;&nbsp;".$file;
 		exit();

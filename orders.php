@@ -29,9 +29,9 @@ if( (!isset($file) || !file_exists($file)) && !isset($_GET['file'])){
 	}
 	
 	echo "<table>";
-		echo "<tr><td style='width:600px;'>&nbsp;</td><td>&nbsp;</td></tr>";
+		echo "<tr><td style='width:480px;'>&nbsp;</td><td style='width:300px;'>&nbsp;</td><td>&nbsp;</td></tr>";
 		foreach($fslist as $i => $fs){
-			echo "<tr><td><a href='?file=".$fs."'>".$fs."</a></td><td>" .time_elapsed_string('@'.filectime($fs)). "</td></tr>";
+			echo "<tr><td><a href='?file=".$fs."'>".$fs."</a></td><td>".md5_file($fs)."</td><td>" .time_elapsed_string('@'.filectime($fs)). "</td></tr>";
 		}
 	echo "</table>";
 	exit();

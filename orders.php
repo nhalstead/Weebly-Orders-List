@@ -12,6 +12,34 @@ $row = 1;
 $empty = 0;
 $Tnum = 0;
 define("DATE", "F j, Y @ g:i A");
+
+// File Selector
+if( (!isset($file) || !file_exists($file)) && !isset($_GET['file'])){
+	$file = "";
+	$fs = glob("*.csv");
+	
+	usort($fs, function($a,$b){
+	  return filemtime($a) - filemtime($b);
+	});
+	$fs = array_reverse($fs);
+	
+	$fslist = array();
+	foreach($fs as $i => $name){
+		$fslist[] = $name;
+	}
+	
+	echo "<table>";
+		echo "<tr><td style='width:600px;'>&nbsp;</td><td>&nbsp;</td></tr>";
+		foreach($fslist as $i => $fs){
+			echo "<tr><td><a href='?file=".$fs."'>".$fs."</a></td><td>" .time_elapsed_string('@'.filectime($fs)). "</td></tr>";
+		}
+	echo "</table>";
+	exit();
+}
+else if(isset($_GET['file']) && preg_match("/orders-([a-zA-Z0-9]{1,})-weebly-com-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $_GET['file'])) {
+	$file = $_GET['file'];
+}
+
 preg_match("/orders-([a-zA-Z0-9]{1,})-weebly-com-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $file, $matches);
 if($matches[2] === "start"){
 	$matches[2] = 0;
@@ -118,7 +146,7 @@ EOF;
 		"<small>Total Read Calls:</small>" => "<small>".$Tnum."</small>",
 	);
 	echo "<table style='font-size:15px;'>";
-	echo "<tr style=''><td style='width:300px;'></td><td></td></tr>";
+	echo "<tr><td style='width:300px;'></td><td></td></tr>";
 	foreach($re as $k => $s){
 		echo "<tr>";
 			echo "<td>".$k."</td><td><b>".$s."</b></td>";

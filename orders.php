@@ -4,7 +4,6 @@ $file = "orders-[SHOP_NAME]-weebly-com-[START]-[END].csv";
 date_default_timezone_set("EST");
 $explain = true;
 $catch = array("BILLING NAME", "TOTAL", "DATE", "SHIPPING EMAIL", "ORDER #", "TAX TOTAL", "SHIPPING PRICE", "SHIPPING COUNTRY", "SHIPPING REGION");
-
 $catchIndex = array();
 $catchNUM = array();
 $list = array();
@@ -12,39 +11,6 @@ $row = 1;
 $empty = 0;
 $Tnum = 0;
 define("DATE", "F j, Y @ g:i A");
-
-// File Selector
-if( (!isset($file) || !file_exists($file)) && !isset($_GET['file'])){
-	$file = "";
-	$fs = glob("*.csv");
-	
-	usort($fs, function($a,$b){
-	  return filemtime($a) - filemtime($b);
-	});
-	$fs = array_reverse($fs);
-	
-	$fslist = array();
-	foreach($fs as $i => $name){
-		$fslist[] = $name;
-	}
-	
-	echo "<table>";
-		echo "<tr><td style='width:480px;'>&nbsp;</td><td style='width:300px;'>&nbsp;</td><td>&nbsp;</td></tr>";
-		foreach($fslist as $i => $fs){
-			echo "<tr><td><a href='?file=".$fs."'>".$fs."</a></td><td>".md5_file($fs)."</td><td>" .time_elapsed_string('@'.filectime($fs)). "</td></tr>";
-		}
-	echo "</table>";
-	exit();
-}
-else if(isset($_GET['file']) && preg_match("/orders-([a-zA-Z0-9]{1,})-weebly-com-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $_GET['file'])) {
-	$file = $_GET['file'];
-}
-
-preg_match("/orders-([a-zA-Z0-9]{1,})-weebly-com-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $file, $matches);
-if($matches[2] === "start"){
-	$matches[2] = 0;
-}
-header("X-Powered-By: Noah 2.0");
 
 // @link https://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago
 function time_elapsed_string($datetime, $full = false) {
@@ -80,9 +46,43 @@ function iarray(){
 	return array_combine($catchIndex, $catchNUM);
 }
 
+// File Selector
+	if( (!isset($file) || !file_exists($file)) && !isset($_GET['file'])){
+		$file = "";
+		$fs = glob("*.csv");
+		
+		usort($fs, function($a,$b){
+		  return filemtime($a) - filemtime($b);
+		});
+		$fs = array_reverse($fs);
+		
+		$fslist = array();
+		foreach($fs as $i => $name){
+			$fslist[] = $name;
+		}
+		
+		echo "<table>";
+			echo "<tr><td style='width:480px;'>&nbsp;</td><td style='width:300px;'>&nbsp;</td><td>&nbsp;</td></tr>";
+			foreach($fslist as $i => $fs){
+				echo "<tr><td><a href='?file=".$fs."'>".$fs."</a></td><td>".md5_file($fs)."</td><td>" .time_elapsed_string('@'.filectime($fs)). "</td></tr>";
+			}
+		echo "</table>";
+		exit();
+	}
+	else if(isset($_GET['file']) && preg_match("/orders-([a-zA-Z0-9]{1,})-weebly-com-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $_GET['file'])) {
+		$file = $_GET['file'];
+	}
+
+// Process the filename for Times
+	preg_match("/orders-([a-zA-Z0-9]{1,})-weebly-com-([0-9]{1,}|start)-([0-9]{1,})\.csv/", $file, $matches);
+	if($matches[2] === "start"){
+		$matches[2] = 0;
+	}
+
+// The Processing Section
 // Loop the File to find the Records and the Data.
 	if (file_exists($file) && ($handle = fopen($file, "r")) !== FALSE) {
-		while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+		while ( ($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
 			$num = count($data);
 
 			// Grab the Locations of the Columns
@@ -126,13 +126,7 @@ function iarray(){
 // Print the Header File Data
 	echo "<title> Export of: ".$file."</title>";
 	echo "<meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=yes'>";
-	echo <<<EOF
-<style>
-	@page{
-		margin: 10px;
-	}
-</style>
-EOF;
+	echo "<style> @page{ margin: 10px; } </style>";
 	$re = array(
 		"Date From: " => date(DATE, $matches[2]),
 		"Date To: " => date(DATE, $matches[3]),

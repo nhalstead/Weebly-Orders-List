@@ -66,7 +66,7 @@ function iarray(){
 		echo "<table>";
 			echo "<tr><td style='width:480px;'>&nbsp;</td><td style='width:300px;'>&nbsp;</td><td><u><b>".date(DATE)."</b></u></td></tr>";
 			foreach($fslist as $i => $fs){
-				echo "<tr><td><a href='?file=".$fs."'>".$fs."</a></td><td>".md5_file($fs)."</td><td>" .time_elapsed_string('@'.filectime($fs)). "</td></tr>";
+				echo "<tr><td><a href='?file=".$fs."'>".$fs."</a></td><td>".md5_file($fs)."</td><td>" .time_elapsed_string('@'.filectime($fs), true). "</td></tr>";
 			}
 		echo "</table>";
 		exit();
